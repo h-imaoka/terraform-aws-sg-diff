@@ -57,9 +57,9 @@ begin
       puts m
       if pr.key? 'old' and pr.key? 'new'
         puts 'authorize'
-        p sg[pr['old']]['cidr_blocks'] - sg[pr['new']]['cidr_blocks']
-        puts 'revoke'
         p sg[pr['new']]['cidr_blocks'] - sg[pr['old']]['cidr_blocks']
+        puts 'revoke'
+        p sg[pr['old']]['cidr_blocks'] - sg[pr['new']]['cidr_blocks']
       elsif pr.key? 'old'
         puts 'revoke'
         p sg[pr['old']]['cidr_blocks']
