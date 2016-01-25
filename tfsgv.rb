@@ -3,19 +3,6 @@
 
 require 'pp'
 
-class String
-  def hex2bin
-    s = self
-    raise "Not a valid hex string" unless(s =~ /^[\da-fA-F]+$/)
-    s = '0' + s if((s.length & 1) != 0)
-    s.scan(/../).map{ |b| b.to_i(16) }.pack('C*')
-  end
-
-  def bin2hex
-    self.unpack('C*').map{ |b| "%02X" % b }.join('')
-  end
-end
-
 begin
   sg_name = ""
   rule_id = ""
@@ -84,7 +71,6 @@ begin
 
   end
 
-# 例外は小さい単位で捕捉する
 rescue SystemCallError => e
   puts %Q(class=[#{e.class}] message=[#{e.message}])
 rescue IOError => e
