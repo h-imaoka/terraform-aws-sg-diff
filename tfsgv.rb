@@ -9,37 +9,41 @@ begin
   all_sg = {}
   sg_info = {}
 
-  File.open(ARGV[0]) do |file|
-    file.each_line do |line|
-      if m = line.match(/^[\+~]\saws_security_group\.(\S+)/)
-        sg_name = m[1]
-        sg_info = {}
+
+  STDIN.read.split("\n").each do |line|
+    pp line
+    if m = line.match(/^[\+~]\saws_security_group\.(\S+)/)
+      sg_name = m[1]
+      sg_info = {}
+    end
+
+    if line == "" and sg_name != ""
+      all_sg[sg_name] = sg_info
+      sg_name = ""
+    end
+
+    if sg_name != "" and
+      m = line.match(/\s+([^.]+\.[^.]+\.[^:]+):\s+"([^"]*)"\s+=>\s+"([^"]*)"/) then
+      arr = m[1].split('.')
+
+      if m[2] == m[3]
+        next
       end
 
-      if line == "\n" and sg_name != ""
-        all_sg[sg_name] = sg_info
-        sg_name = ""
-      end
-
-      if sg_name != "" and
-        m = line.match(/\s+([^.]+\.[^.]+\.[^:]+):\s+"([^"]*)"\s+=>\s+"([^"]*)"/) then
-        arr = m[1].split('.')
-        if m[1].end_with? "cidr_blocks.#"
-          rule_id = arr[0]+'_'+arr[1]
-          sg_info[rule_id] = {}
-          sg_info[rule_id]['dir'] =  arr[0]
-          sg_info[rule_id]['cidr_blocks'] = []
-          sg_info[rule_id]['new'] = ( (m[2] == "0" or m[2] == "") ? 'new' : 'old')
+      if m[1].end_with? "cidr_blocks.#"
+        rule_id = arr[0]+'_'+arr[1]
+        sg_info[rule_id] = {}
+        sg_info[rule_id]['dir'] =  arr[0]
+        sg_info[rule_id]['cidr_blocks'] = []
+        sg_info[rule_id]['new'] = ( (m[2] == "0" or m[2] == "") ? 'new' : 'old')
+      else
+        if arr[2] == 'cidr_blocks'
+          sg_info[rule_id]['cidr_blocks'] << (m[2] != "" ? m[2] : m[3])
+        elsif arr[2] == 'security_groups'
+        # todo: sg diff
         else
-          if arr[2] == 'cidr_blocks'
-            sg_info[rule_id]['cidr_blocks'] << (m[2] != "" ? m[2] : m[3])
-          elsif arr[2] == 'security_groups'
-            # todo: sg diff
-          else
-            sg_info[rule_id][arr[2]] = (m[2] != "" ? m[2] : m[3])
-          end
+          sg_info[rule_id][arr[2]] = (m[2] != "" ? m[2] : m[3])
         end
-
       end
     end
   end
